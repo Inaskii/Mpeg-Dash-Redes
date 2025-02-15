@@ -46,11 +46,10 @@ class R2AMpegDash(IR2A):
         self.calcDelta()
         self.EstimatedT = self.estimate_throughput()
         
-        self.EstimatedT = (1-self.mi)*self.EstimatedT
-        
+        current = (1-self.mi)*self.EstimatedT
         selected_qi = self.qi[0]
         for i in self.qi:
-            if self.EstimatedT > i:
+            if current > i:
                 selected_qi = i
 
 

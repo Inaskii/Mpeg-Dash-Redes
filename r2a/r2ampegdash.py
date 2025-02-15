@@ -18,6 +18,9 @@ class R2AMpegDash(IR2A):
         self.EstimatedT = 1
         self.delta = 1
         self.p=None
+        self.mi = 0.2
+        self.lastT = 0
+        
 
 
     def handle_xml_request(self, msg):
@@ -32,6 +35,7 @@ class R2AMpegDash(IR2A):
 
         t = time.perf_counter() - self.request_time
         self.throughputs.append(msg.get_bit_length() / t)
+        self.lastT = self.throughputs[-1]
 
         self.send_up(msg)
 
@@ -41,8 +45,8 @@ class R2AMpegDash(IR2A):
         self.calcP()
         self.calcDelta()
         self.EstimatedT = self.estimate_throughput()
-
-
+        
+        self.EstimatedT = (1-self.mi)*self.EstimatedT
         
         selected_qi = self.qi[0]
         for i in self.qi:
@@ -72,7 +76,7 @@ class R2AMpegDash(IR2A):
         return (1 - self.delta) * self.EstimatedT + self.delta * self.throughputs[-1]
     
     def calcP(self):
-        self.p=abs((self.throughputs[-1]-self.EstimatedT)/self.EstimatedT)
+        self.p=abs((self.lastT-self.EstimatedT)/self.EstimatedT)
 
     def calcDelta(self):
         self.delta = 1/(1+math.exp(-self.k*(self.p-self.p0)))

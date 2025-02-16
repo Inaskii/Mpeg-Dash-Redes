@@ -12,13 +12,13 @@ class R2AMpegDash(IR2A):
         self.request_time = 0
         self.qi = []
         self.lastT = 0
+        self.nowT = 0
         self.delta_min = 0.05
         self.k = 21
         self.p0 = 0.2
         self.EstimatedT = 1
         self.delta = 1
         self.p=0
-        self.delta_min = 0.1
         self.parsed_mpd = None
         
 
@@ -40,18 +40,21 @@ class R2AMpegDash(IR2A):
 
     def handle_segment_size_request(self, msg):
         self.request_time = time.perf_counter()
+        self.nowT = msg.get_bit_length()
 
         self.calcP()
-        self.calcDelta()  
+        self.calcDelta()
         self.EstimatedT = self.estimate_throughput()
         erre = 0.7* self.EstimatedT
-        selected_qi = self.qi[0]
         
+        selected_qi = self.qi[0]
         for i in self.qi:
             if erre > i:
-                selected_qi = i                
+                selected_qi = i
+
+
+
         msg.add_quality_id(selected_qi)
-        
         self.send_down(msg)
 
     def handle_segment_size_response(self, msg):
@@ -67,16 +70,12 @@ class R2AMpegDash(IR2A):
 
     def estimate_throughput(self):
         if len(self.throughputs) < 2:
-            return self.lastT
+            return self.throughputs[-1]
         
-        return (1 - self.delta) * self.EstimatedT + self.delta * self.lastT
+        return (1 - self.delta) * self.EstimatedT + self.delta * self.throughputs[-1]
     
     def calcP(self):
         self.p=abs((self.lastT-self.EstimatedT)/self.EstimatedT)
-        
 
     def calcDelta(self):
-        self.delta =  max(1/(1+math.exp(-self.k*(self.p-self.p0))), self.delta_min)
-       
-        
-        
+        self.delta = 1/(1+math.exp(-self.k*(self.p-self.p0)))

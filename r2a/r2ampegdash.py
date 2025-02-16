@@ -20,7 +20,7 @@ class R2AMpegDash(IR2A):
         self.lastT = 0
         #ultimo throughput
         
-        self.delta_min = 0.05
+        self.delta_min = 0.1
         #delta minimo
         
         self.k = 21
@@ -40,8 +40,8 @@ class R2AMpegDash(IR2A):
         
         self.parsed_mpd = None
         #mpd parseado
-        
-        self.mi = 0.4
+    
+        self.mi = 0.55
         #margem de erro
 
     def handle_xml_request(self, msg):
@@ -63,7 +63,7 @@ class R2AMpegDash(IR2A):
     def handle_segment_size_request(self, msg):
         self.request_time = time.perf_counter()
         self.nowT = msg.get_bit_length()
-
+        self.lastT = self.throughputs[-1]
         self.calcP()
         self.calcDelta()
         self.EstimatedT = self.estimate_throughput()
@@ -107,6 +107,7 @@ class R2AMpegDash(IR2A):
     #Calcula delta, variação que será usada para calcular o throughput estimado
     def calcDelta(self):
         self.delta = 1/(1+math.exp(-self.k*(self.p-self.p0)))
+        print(self.delta)
         if(self.delta_min < self.delta):
             self.delta = self.delta_min
         #delta não pode ser menor que delta_min

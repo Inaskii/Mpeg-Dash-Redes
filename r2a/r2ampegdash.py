@@ -41,7 +41,7 @@ class R2AMpegDash(IR2A):
         self.parsed_mpd = None
         #mpd parseado
         
-        self.mi = 0.35
+        self.mi = 0.4
         #margem de erro
 
     def handle_xml_request(self, msg):
@@ -96,9 +96,9 @@ class R2AMpegDash(IR2A):
     #calcula o throughput estimado
     def estimate_throughput(self):
         if len(self.throughputs) < 2:
-            return self.throughputs[-1]
+            return self.lastT
         
-        return (1 - self.delta) * self.EstimatedT + self.delta * self.throughputs[-1]
+        return (1 - self.delta) * self.EstimatedT + self.delta * self.lastT
     
     #Calcula P, chamado no artigo de "normalized throughput deviation"
     def calcP(self):

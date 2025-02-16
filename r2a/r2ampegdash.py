@@ -33,7 +33,7 @@ class R2AMpegDash(IR2A):
         #throughput estimado
         
         self.delta = 1
-        #delta
+        #delta(δ)
         
         self.p=0
         #Desvio normalizado de throughput
@@ -107,3 +107,6 @@ class R2AMpegDash(IR2A):
     #Calcula delta, variação que será usada para calcular o throughput estimado
     def calcDelta(self):
         self.delta = 1/(1+math.exp(-self.k*(self.p-self.p0)))
+        if(self.delta_min < self.delta):
+            self.delta = self.delta_min
+        #delta não pode ser menor que delta_min
